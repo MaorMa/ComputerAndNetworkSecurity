@@ -1,10 +1,11 @@
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 
 /**
- * Created by Maor on 3/23/2019.
+ * This class responsible for encryption
  */
 public class Encrypt {
     private String outputLocation; //output path to save the cypher
@@ -12,7 +13,7 @@ public class Encrypt {
     private String keyLocation; //key path for the keys
     private LinkedList<byte[][]> byteMsg; //include all the message in format of [4][4] matrix
     private LinkedList<byte[][]> keys;//include all the keys in format of [4][4] matrix
-    private byte[] cypherMatrix;
+    private byte[] cypherText;
 
     /**
      * C'tor
@@ -28,7 +29,7 @@ public class Encrypt {
         this.byteMsg = new LinkedList<>();
         getMatrix(keyLocation);
         getMatrix(inputLocation);
-        this.cypherMatrix = new byte[this.byteMsg.size()*16];
+        this.cypherText = new byte[this.byteMsg.size()*16];
         this.AesEncryption();
     }
 
@@ -143,10 +144,22 @@ public class Encrypt {
             //setCypher
             for(int i=0;i<msg.length;i++){
                 for(int j=0;j<msg.length;j++){
-                    this.cypherMatrix[index] = msg[j][i];
+                    this.cypherText[index] = msg[j][i];
                     index++;
                 }
             }
+        }
+        writeToDisk();
+    }
+
+    /**
+     * This method write plain text to disk
+     */
+    private void writeToDisk() {
+        try {
+            Files.write(Paths.get(this.outputLocation), this.cypherText);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -176,15 +189,13 @@ public class Encrypt {
      */
     private void printCypher(){
         int index = 0;
-        for(int i=0;i<this.cypherMatrix.length;i++){
-            System.out.print(this.cypherMatrix[index] + ", ");
+        for(int i=0;i<this.cypherText.length;i++){
+            System.out.print(this.cypherText[index] + ", ");
             index++;
         }
     }
 
     public static void main(String[] args) {
-        Encrypt e = new Encrypt("C:\\Users\\Maor\\Desktop\\files\\key_short", "C:\\Users\\Maor\\Desktop\\files\\message_short", "C:\\Users\\Maor\\Desktop\\files\\");
-        e.prinitOrigin("C:\\Users\\Maor\\Desktop\\files\\cipher_short");
-        e.printCypher();
+        new Encrypt("C:\\Users\\Maor\\Desktop\\files\\key_short", "C:\\Users\\Maor\\Desktop\\files\\message_short", "C:\\Users\\Maor\\Desktop\\files\\encrypted_text");
     }
 }
