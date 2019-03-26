@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.LinkedList;
 
@@ -14,6 +15,8 @@ public class Break {
     private LinkedList<byte[][]> cypher; //include all the message in format of [4][4] matrix
     private LinkedList<byte[][]> keys;//include all the keys in format of [4][4] matrix
     private LinkedList<byte[][]> byteMsg; //include all the message in format of [4][4] matrix
+    private byte[] newKeys;
+
 
     public Break(String cypherLocation, String messageLocation, String outputLocation) {
         this.messageLocation = messageLocation;
@@ -26,6 +29,7 @@ public class Break {
         getMatrix(getRandomKey());
         getMatrix(cypherLocation);
         getMatrix(messageLocation);
+        AesBreak();
     }
 
     /**
@@ -63,10 +67,9 @@ public class Break {
             if (location.equals(this.cypherLocation)) {
                 this.cypher.add(array);
                 //if keyLocation than add to keys
-
-                if (location.equals(this.messageLocation)) {
-                    this.byteMsg.add(array);
-                }
+            }
+            if (location.equals(this.messageLocation)) {
+                this.byteMsg.add(array);
             }
         }
     }
@@ -197,23 +200,54 @@ public class Break {
      * Using shiftRows and addRoundKey
      */
     private void AesBreak() {
-        //iterate over all the messages
-        int index = 0;
-        for (byte[][] cypher : this.cypher) {
+        int index;
+        for(byte[][] msg : this.byteMsg) {
             //iterate over all the keys
-            for (int i = 1; i >= 0; i--) {
-                this.addRoundKey(this.keys.get(i), cypher);
-                this.shiftRows(cypher); //shift rows
+            for (byte[][] key : this.keys) {
+                this.regulerShiftRows(msg); //shif rows
+                this.addRoundKey(key, msg);
             }
         }
 
         for (byte[][] msg : this.byteMsg) {
             this.regulerShiftRows(msg);
         }
+
+        for (byte[][] msg : this.byteMsg) {
+            for(byte[][] cyp: this.cypher) {
+                this.addRoundKey(cyp, msg);
+            }
+        }
+
+        this.keys.add(this.byteMsg.get(0));
+        //setCypher
+        index = 0;
+        this.newKeys = new byte[16*3];
+        for(byte[][]key:keys) {
+            for (int i = 0; i < key.length; i++) {
+                for (int j = 0; j < key[0].length; j++) {
+                    this.newKeys[index] = key[j][i];
+                    index++;
+                }
+            }
+        }
+
+        writeToDisk();
     }
-    
+
+    /**
+     * This method write plain text to disk
+     */
+    private void writeToDisk() {
+        try {
+            Files.write(Paths.get(this.outputLocation), this.newKeys);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args) {
-        new Break("C:\\Users\\Maor\\Desktop\\files\\key_short", "C:\\Users\\Maor\\Desktop\\files\\cipher_short", "C:\\Users\\Maor\\Desktop\\files\\");
+       Break b =  new Break("C:\\Users\\Maor\\Desktop\\files\\cipher_long","C:\\Users\\Maor\\Desktop\\files\\message_long", "C:\\Users\\Maor\\Desktop\\files\\newkeys");
     }
 
 }

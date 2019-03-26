@@ -172,6 +172,6 @@ public class Decrypt {
     }
 
     public static void main(String[] args) {
-        new Decrypt("C:\\Users\\Maor\\Desktop\\files\\key_long", "C:\\Users\\Maor\\Desktop\\files\\cipher_long", "C:\\Users\\Maor\\Desktop\\files\\decrypted_text");
+        new Decrypt("C:\\Users\\Maor\\Desktop\\files\\newkeys", "C:\\Users\\Maor\\Desktop\\files\\cipher_long", "C:\\Users\\Maor\\Desktop\\files\\decrypted_text");
     }
 }
